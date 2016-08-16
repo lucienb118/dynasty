@@ -148,6 +148,72 @@ describe 'aws-translators', () ->
       expect(params.Key.foo).to.include.keys('S')
       expect(params.Key.foo.S).to.equal('rofl')
 
+    it 'should send ConditionExpression to AWS', () ->
+      sandbox.spy(dynastyTable.parent.dynamo, "deleteItemAsync")
+
+      promise = lib.deleteItem.call(
+        dynastyTable
+        'foo'
+          conditionExpression: '#use_count = :zero'
+        null
+          hashKeyName: 'bar'
+          hashKeyType: 'S'
+      )
+
+      expect(dynastyTable.parent.dynamo.deleteItemAsync.calledOnce)
+      params = dynastyTable.parent.dynamo.deleteItemAsync.getCall(0).args[0]
+      expect(params.Key).to.include.keys('bar')
+      expect(params.Key.bar).to.include.keys('S')
+      expect(params.Key.bar.S).to.equal('foo')
+      expect(params.ConditionExpression).to.equal('#use_count = :zero')
+
+    it 'should send ExpressionAttributeNames to AWS', () ->
+      sandbox.spy(dynastyTable.parent.dynamo, "deleteItemAsync")
+
+      promise = lib.deleteItem.call(
+        dynastyTable
+        'foo'
+          conditionExpression: '#use_count = :zero'
+          expressionAttributeNames: '#use_count': 'use_count'
+        null
+          hashKeyName: 'bar'
+          hashKeyType: 'S'
+      )
+
+      expect(dynastyTable.parent.dynamo.deleteItemAsync.calledOnce)
+      params = dynastyTable.parent.dynamo.deleteItemAsync.getCall(0).args[0]
+      expect(params.Key).to.include.keys('bar')
+      expect(params.Key.bar).to.include.keys('S')
+      expect(params.Key.bar.S).to.equal('foo')
+      expect(params.ConditionExpression).to.equal('#use_count = :zero')
+      expect(params.ExpressionAttributeNames).to.include.keys('#use_count')
+      expect(params.ExpressionAttributeNames['#use_count']).to.equal('use_count')
+
+    it 'should send ExpressionAttributeValues to AWS', () ->
+      sandbox.spy(dynastyTable.parent.dynamo, "deleteItemAsync")
+
+      promise = lib.deleteItem.call(
+        dynastyTable
+        'foo'
+          conditionExpression: '#use_count = :zero'
+          expressionAttributeNames: '#use_count': 'use_count'
+          expressionAttributeValues: ':zero': 0
+        null
+          hashKeyName: 'bar'
+          hashKeyType: 'S'
+      )
+
+      expect(dynastyTable.parent.dynamo.deleteItemAsync.calledOnce)
+      params = dynastyTable.parent.dynamo.deleteItemAsync.getCall(0).args[0]
+      expect(params.Key).to.include.keys('bar')
+      expect(params.Key.bar).to.include.keys('S')
+      expect(params.Key.bar.S).to.equal('foo')
+      expect(params.ConditionExpression).to.equal('#use_count = :zero')
+      expect(params.ExpressionAttributeNames).to.include.keys('#use_count')
+      expect(params.ExpressionAttributeNames['#use_count']).to.equal('use_count')
+      expect(params.ExpressionAttributeValues).to.include.keys(':zero')
+      expect(params.ExpressionAttributeValues[':zero']).to.equal(0)
+
   describe '#batchGetItem', () ->
 
     dynastyTable = null
