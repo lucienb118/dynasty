@@ -72,6 +72,14 @@ module.exports.deleteItem = (params, options, callback, keySchema) ->
   awsParams =
     TableName: @name
     Key: getKey(params, keySchema)
+
+  if options?.conditionExpression
+    awsParams.ConditionExpression = options.conditionExpression
+  if options?.expressionAttributeNames
+    awsParams.ExpressionAttributeNames = options.expressionAttributeNames
+  if options?.expressionAttributeValues
+    awsParams.ExpressionAttributeValues = options.expressionAttributeValues
+
   @parent.dynamo.deleteItemAsync awsParams
 
 module.exports.batchGetItem = (params, callback, keySchema) ->
